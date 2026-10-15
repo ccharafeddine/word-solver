@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#ece7dd" />
+    <meta name="description" content="A word-game helper: find the best next guess in five-letter guessing games, and find every word you can make from your letter tiles. Free, offline, explained in plain words." />
+    <meta property="og:title" content="Word Solver" />
+    <meta property="og:description" content="The best next guess for five-letter word puzzles, and every word you can make from your tiles. Free and offline." />
+    <meta property="og:image" content="./og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="./og-image.png" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icon-192.png" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <title>Word Solver</title>
+  </head>
+  <body>
+    <a class="skip" href="#tabs">Skip to the app</a>
+    <div id="error-banner" class="banner bad hidden" role="alert"></div>
+    <div id="update-banner" class="banner hidden" role="status"></div>
+    <header>
+      <h1><img src="./icon.svg" alt="" width="28" height="28" /> Word Solver</h1>
+      <nav id="tabs" class="tabs" role="tablist" aria-label="Tool">
+        <button role="tab" id="tab-guess" aria-controls="guess" aria-selected="true" title="Five-letter guessing games">🟩 Guess Helper</button>
+        <button role="tab" id="tab-finder" aria-controls="finder" aria-selected="false" title="Words from your letter tiles">🔤 Word Finder</button>
+      </nav>
+      <div class="hdr-icons">
+        <button id="tutorial" class="icon" aria-label="Tutorial: lessons and app tour" title="Tutorial"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/><path d="M22 9v6"/></svg></button>
+        <button id="help" class="icon" aria-label="Help and shortcuts" title="Help (?)"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.3 9.2a2.8 2.8 0 0 1 5.4 1c0 1.9-2.7 2.3-2.7 4"/><circle cx="12" cy="17.3" r=".6" fill="currentColor"/></svg></button>
+        <button id="settings" class="icon" aria-label="Settings: theme, updates and about" title="Settings" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+      </div>
+    </header>
+    <div id="onboarding" class="tip welcome hidden" role="dialog" aria-live="polite"></div>
+
+    <main id="guess" class="page" role="tabpanel" aria-labelledby="tab-guess">
+      <section class="left" aria-label="Your guesses">
+        <div class="card" id="board-card">
+          <div class="row spread"><h2>Your guesses</h2><div class="row tight"><button id="g-undo" title="Remove the last guess">Undo</button><button id="g-clear" title="Start a new puzzle">New puzzle</button></div></div>
+          <p class="muted fine" id="board-help">Type the word you guessed, then tap each tile until its colour matches the game: gray, yellow, green.</p>
+          <div id="board" class="board" aria-label="Guesses and their colours"></div>
+          <form id="g-form" class="row" autocomplete="off">
+            <input id="g-input" class="mono grow" type="text" maxlength="5" placeholder="Your guess" aria-label="Your guess" spellcheck="false" autocapitalize="off" />
+            <button id="g-add" class="primary" type="submit">Add guess</button>
+          </form>
+          <p id="g-warn" class="muted fine warn" aria-live="polite"></p>
+          <div class="legend-row"><span><b class="tile mini c0"></b> Gray: not in the word</span><span><b class="tile mini c1"></b> Yellow: in the word, wrong spot</span><span><b class="tile mini c2"></b> Green: right spot</span></div>
+        </div>
+        <div class="card" id="left-card">
+          <div class="row spread"><h2>Words that still fit</h2><span id="g-count" class="muted"></span></div>
+          <div id="g-left" class="chips"></div>
+          <p class="muted fine">Most likely first. "Chance" uses how common each word is in everyday English.</p>
+        </div>
+      </section>
+      <section class="right" aria-label="Best next guess">
+        <div id="g-status" class="status" role="status" aria-live="polite">Loading the word list…</div>
+        <div class="card" id="best-card">
+          <div class="row spread"><h2>Best next guess</h2>
+            <label class="check"><input type="checkbox" id="g-only" /> Only words that could be the answer</label></div>
+          <div class="best-wrap"><table class="best" aria-describedby="best-note"><thead><tr><th>Guess</th><th title="How much this guess tells you, in bits. Each bit halves the list.">Info</th><th title="Words you can expect to have left">Left after</th><th title="Chance this guess is the answer">Win now</th><th></th></tr></thead><tbody id="g-best"></tbody></table></div>
+          <p class="muted fine" id="best-note">Each extra bit of info cuts the list in half. Tap a word to play it.</p>
+        </div>
+        <div class="card" id="why-card">
+          <h2>How it picks</h2>
+          <p>For each possible guess, the app imagines every word that could still be the answer and works out which colours you would see. A good guess splits the words into lots of small groups, so whatever colours come back, few words are left.</p>
+          <p class="muted">That is called <b>information</b> (or entropy), measured in bits. A guess that could win right now gets a small bonus. Words that are more common count more, because puzzle answers are usually everyday words.</p>
+        </div>
+      </section>
+    </main>
+
+    <main id="finder" class="page hidden" role="tabpanel" aria-labelledby="tab-finder">
+      <section class="left" aria-label="Your letters">
+        <div class="card" id="tiles-card">
+          <h2>Your letters</h2>
+          <form id="f-form" autocomplete="off">
+            <label class="field wide">Letters <small class="muted">use ? for a blank tile</small>
+              <input id="f-tiles" class="mono big-input" type="text" maxlength="15" placeholder="e.g. retains?" spellcheck="false" autocapitalize="off" /></label>
+            <div id="f-rack" class="rack" aria-hidden="true"></div>
+          </form>
+        </div>
+        <div class="card" id="filters-card">
+          <div class="row spread"><h2>Filters</h2><button id="f-clear" type="button">Clear</button></div>
+          <p class="muted fine">Letters here are already on the board, so you don't need them in your letters.</p>
+          <div class="filters">
+            <label class="field">Starts with <input id="f-starts" class="mono" type="text" maxlength="8" spellcheck="false" /></label>
+            <label class="field">Ends with <input id="f-ends" class="mono" type="text" maxlength="8" spellcheck="false" /></label>
+            <label class="field">Contains <input id="f-contains" class="mono" type="text" maxlength="8" spellcheck="false" /></label>
+            <label class="field">Length <select id="f-length" aria-label="Word length"><option value="0">Any</option></select></label>
+          </div>
+        </div>
+      </section>
+      <section class="right" aria-label="Words found">
+        <div id="f-status" class="status" role="status" aria-live="polite">Type some letters to find words.</div>
+        <div class="card" id="results-card">
+          <div class="row spread"><h2>Words</h2><span id="f-count" class="muted"></span></div>
+          <div id="f-results" class="results"></div>
+          <p class="muted fine">Numbers are tile points: rare letters like Q and Z are worth more. A blank scores 0 and is shown underlined.</p>
+        </div>
+      </section>
+    </main>
+
+    <dialog id="settings-dialog" aria-labelledby="settings-title">
+      <h2 id="settings-title">Settings</h2>
+      <h3>Appearance</h3>
+      <div id="theme-skins" class="skin-grid" role="radiogroup" aria-label="Theme"></div>
+      <div class="row mode-row"><span id="mode-label">Mode</span>
+        <div class="group" id="theme-modes" role="radiogroup" aria-labelledby="mode-label">
+          <button data-mode="light" role="radio">Light</button><button data-mode="dark" role="radio">Dark</button><button data-mode="system" role="radio">System</button>
+        </div>
+      </div>
+      <p id="theme-mode-note" class="muted"></p>
+      <div id="updates-section">
+      <h3>Updates</h3>
+      <div class="row"><button id="check-update">Check for updates</button><span id="update-msg" class="muted" aria-live="polite"></span></div>
+      </div>
+      <h3>About</h3>
+      <p class="about">Word Solver <span id="version" class="mono"></span>. Find the best next guess in five-letter word puzzles, and every word you can make from your tiles. Works offline. MIT licence.</p>
+      <h3>Word lists</h3>
+      <p class="about muted" id="credits">Words come from the <b>ENABLE</b> word list (Enhanced North American Benchmark Lexicon, public domain): 172,823 words. How common each five-letter word is comes from <b>wordfreq</b> by Robyn Speer (data CC BY-SA 4.0). This app is not made by or connected with any word game or its makers, and it doesn't use any game's official answer list.</p>
+      <div class="row"><button id="settings-close" class="primary">Done</button></div>
+    </dialog>
+    <dialog id="help-dialog" aria-labelledby="help-title">
+      <h2 id="help-title">Help and shortcuts</h2>
+      <table class="keys">
+        <tr><td><kbd>1</kbd> / <kbd>2</kbd></td><td>Guess Helper / Word Finder tab</td></tr>
+        <tr><td><kbd>/</kbd></td><td>Jump to the text box</td></tr>
+        <tr><td>Guess Helper: <kbd>Enter</kbd></td><td>Add the typed guess</td></tr>
+        <tr><td>Guess Helper: click a tile</td><td>Cycle gray → yellow → green</td></tr>
+        <tr><td><kbd>?</kbd></td><td>This help</td></tr>
+      </table>
+      <div class="row"><button id="tour">Tutorial…</button><button id="help-appearance">Settings…</button><button id="help-close" class="primary">Close</button></div>
+    </dialog>
+    <dialog id="tutorial-dialog" aria-labelledby="tut-title">
+      <h2 id="tut-title">Tutorial</h2>
+      <p id="tut-summary" class="muted"></p>
+      <h3>Lessons</h3>
+      <p class="muted">Five short lessons: how the colours work, double letters, why some guesses tell you more, and how blanks and board letters work in the finder. Each one asks a quick question.</p>
+      <div class="row"><button id="tut-lessons" class="primary">Start the lessons</button><button id="tut-restart">Start over</button></div>
+      <h3>App tour</h3>
+      <p class="muted">A tour of every part of the app, with live examples on screen. Your own guesses and letters are put back afterwards.</p>
+      <div class="row"><button id="tut-tour" class="primary">Take the app tour</button><button id="tut-tour-restart">From the start</button></div>
+      <div class="row spread"><button id="tut-reset" class="link">Reset tutorial progress</button><button id="tut-close">Close</button></div>
+    </dialog>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
